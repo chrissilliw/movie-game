@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { IHero } from "../models/IHero";
-import { HERO_CHARACTERS } from "../../data/Heroes";
+import { IHero } from "../xxxmodels/IHero";
+import { HERO_CHARACTERS } from "../../data/XHeroes";
 import Column from "./Column";
 
 const Board = () => {

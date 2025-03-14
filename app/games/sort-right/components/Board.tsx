@@ -1,64 +1,92 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { IHero } from "../../models/IHero";
-import { HERO_CHARACTERS } from "../../../data/Heroes";
+import { ICard } from "../models/ICard";
 import { IColumn } from "../models/IColumn";
 import Column from "./Column";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import { HeroesData } from "../data/Heroes";
+import { OscarsData } from "../data/OscarsWinners";
+import { preconnect } from "react-dom";
 
-const Board = () => {
-  const [cards, setCards] = useState<IHero[]>([]);
+interface BoardProps {
+  setScores: React.Dispatch<
+    React.SetStateAction<{ playerOne: number; playerTwo: number }>
+  >;
+  currentPlayer: "playerOne" | "playerTwo";
+  switchTurn: () => void;
+  category: "oscars" | "heroes";
+}
+
+const Board = ({
+  setScores,
+  currentPlayer,
+  switchTurn,
+  category,
+}: BoardProps) => {
+  const { COLUMNS, CARDS } = category === "oscars" ? OscarsData : HeroesData;
+  const [cards, setCards] = useState<ICard[]>([]);
   const [randomCharacter, setRandomCharacter] = useState([]);
+  const [isCorrect, setIsCorrect] = useState<boolean>(false);
 
-  const COLUMNS: IColumn[] = [
-    { id: "marvel", title: "Marvel" },
-    { id: "line_up", title: "Line up" },
-    { id: "dc", title: "DC" },
-  ];
+  useEffect(() => {
+    const shuffledCharacters = shuffleArray(CARDS);
+    setCards(shuffleArray(CARDS));
+    console.log(cards);
+  }, [category]);
 
-  // Shuffle selected array before rendering to game
-  const shuffleArray = (HERO_CHARACTERS: IHero[]) => {
-    let shuffled = [...HERO_CHARACTERS];
+  // Shuffle selected array before rendering 10 cards to game
+  const shuffleArray = (Card: ICard[]) => {
+    let shuffled = [...Card];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-
-    return shuffled;
+    return shuffled.slice(0, 10);
   };
 
-  // Get characters from shuffled array
-  const getRandomCharacters = (characters: IHero[]) => {
-    const shuffledCaracters = shuffleArray(characters).slice(0, 10);
-    console.log(shuffledCaracters);
-    return shuffledCaracters;
-  };
-
-  useEffect(() => {
-    const checkRandomCharacters = getRandomCharacters(HERO_CHARACTERS);
-    setCards(checkRandomCharacters);
-  }, []);
-
+  //Event when card is released
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-
     if (!over) return;
 
-    const cardId = active.id as string;
-    const newColumn = over.id as IHero["column"];
+    const cardId = active.id as string; // Id on dragged card
+    const newColumn = over.id as ICard["column"]; // updated Card column
 
-    console.log("cardID: ", cardId);
-    console.log("newStatus: ", newColumn);
+    const draggedCard = cards.find((card) => card.id === cardId);
+    if (!draggedCard) return;
 
-    setCards(() =>
-      cards.map((card) =>
-        card.id === cardId ? { ...card, column: newColumn } : card
+    if (draggedCard.column === newColumn) return; // I card is dropped in same column, do nothing
+
+    const isCorrect =
+      (draggedCard.selection === "Oscarsvinnare" &&
+        newColumn === "oscarsVinnare") ||
+      (draggedCard.selection === "Utan Oscar" && newColumn === "utan_oscar") ||
+      (draggedCard.selection === "marvel" && newColumn === "marvel") ||
+      (draggedCard.selection === "dc" && newColumn === "dc");
+
+    setCards((prevCards) =>
+      prevCards.map((card) =>
+        card.id === cardId
+          ? {
+              ...card,
+              column: newColumn,
+              status: isCorrect ? "correct" : "incorrect",
+            }
+          : card
       )
     );
-    // console.log(c);
-  }
 
+    // Giving 1 point for current player who drags card to correct column.
+    if (isCorrect) {
+      setScores((prevScores) => ({
+        ...prevScores,
+        [currentPlayer]: prevScores[currentPlayer] + 1,
+      }));
+    }
+
+    switchTurn();
+  }
   return (
     <div className="flex gap-8">
       <DndContext onDragEnd={handleDragEnd}>

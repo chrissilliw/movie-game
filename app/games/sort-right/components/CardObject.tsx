@@ -1,11 +1,9 @@
 import React from "react";
-import { IHero } from "../models/IHero";
+import { ICardObject } from "../models/ICard";
 import { useDraggable } from "@dnd-kit/core";
-import { motion } from "framer-motion";
-import { useSortable } from "@dnd-kit/sortable";
 
 interface CardProps {
-  card: IHero;
+  card: ICardObject;
 }
 
 const CardObject = ({ card }: CardProps) => {
@@ -25,7 +23,13 @@ const CardObject = ({ card }: CardProps) => {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className="cursor-grab rounded-lg bg-neutral-700 p-4 shadow-sm hover: shadow:md"
+      className={`cursor-grab rounded-xl py-5 px-4 shadow-sm hover: shadow:md ${
+        card.status === "correct"
+          ? "bg-green-500"
+          : card.status === "incorrect"
+          ? "bg-red-500"
+          : "bg-neutral-700"
+      }`}
       style={style}
     >
       <h3 className="font-medium text-neutral-100">{card.name}</h3>

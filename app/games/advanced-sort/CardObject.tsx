@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { IHero } from "../models/IHero";
+import { IHero } from "../xxxmodels/IHero";
 import DropIndicator from "./DropIndicator";
 
 interface CardProps {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { IHero } from "../models/IHero";
+import { IHero } from "../xxxmodels/IHero";
 import { Card } from "@/components/ui/card";
 import CardObject from "./CardObject";
 import DropIndicator from "./DropIndicator";
