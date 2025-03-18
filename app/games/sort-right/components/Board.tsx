@@ -8,31 +8,38 @@ import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { HeroesData } from "../data/Heroes";
 import { OscarsData } from "../data/OscarsWinners";
 import { preconnect } from "react-dom";
+import { useGameStore } from "@/app/stores/gameStore";
 
 interface BoardProps {
-  setScores: React.Dispatch<
-    React.SetStateAction<{ playerOne: number; playerTwo: number }>
-  >;
-  currentPlayer: "playerOne" | "playerTwo";
-  switchTurn: () => void;
+  // setScores: React.Dispatch<
+  //   React.SetStateAction<{ playerOne: number; playerTwo: number }>
+  // >;
+  // currentPlayer: "playerOne" | "playerTwo";
+  // switchTurn: () => void;
   category: "oscars" | "heroes";
+  // currentPlayerIndex: number;
 }
 
 const Board = ({
-  setScores,
-  currentPlayer,
-  switchTurn,
+  // setScores,
+  // switchTurn,
   category,
-}: BoardProps) => {
+}: // currentPlayerIndex,
+BoardProps) => {
   const { COLUMNS, CARDS } = category === "oscars" ? OscarsData : HeroesData;
   const [cards, setCards] = useState<ICard[]>([]);
   const [randomCharacter, setRandomCharacter] = useState([]);
   const [isCorrect, setIsCorrect] = useState<boolean>(false);
 
+  const { players, currentPlayerIndex, updateTotalScore, switchTurn } =
+    useGameStore();
+
+  const currentPlayer = players[currentPlayerIndex];
+
   useEffect(() => {
     const shuffledCharacters = shuffleArray(CARDS);
     setCards(shuffleArray(CARDS));
-    console.log(cards);
+    console.log();
   }, [category]);
 
   // Shuffle selected array before rendering 10 cards to game
@@ -78,11 +85,15 @@ const Board = ({
     );
 
     // Giving 1 point for current player who drags card to correct column.
+    // if (isCorrect) {
+    //   setScores((prevScores) => ({
+    //     ...prevScores,
+    //     [currentPlayer]: prevScores[currentPlayer] + 1,
+    //   }));
+    // }
+
     if (isCorrect) {
-      setScores((prevScores) => ({
-        ...prevScores,
-        [currentPlayer]: prevScores[currentPlayer] + 1,
-      }));
+      updateTotalScore(currentPlayer.id, 1);
     }
 
     switchTurn();
